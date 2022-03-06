@@ -6,7 +6,6 @@ const express = require('express');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
 const { Strategy } = require('passport-google-oauth20');
-const UserInfoError = require('passport-google-oauth20/lib/errors/userinfoerror');
 
 require('dotenv').config();
 

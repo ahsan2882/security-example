@@ -5,7 +5,8 @@ const helmet = require('helmet');
 const express = require('express');
 const passport = require('passport');
 const cookieSession = require('cookie-session');
-const { Strategy } = require('passport-google-oauth20')
+const { Strategy } = require('passport-google-oauth20');
+const UserInfoError = require('passport-google-oauth20/lib/errors/userinfoerror');
 
 require('dotenv').config();
 
@@ -33,13 +34,16 @@ passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
 
 // Save session to cookie
 passport.serializeUser((user, done) => {
-    done(null, user);
+    done(null, user.id);
 });
 
 
 // Read session from cookie
-passport.deserializeUser((obj, done) => {
-    done(null, obj);
+passport.deserializeUser((id, done) => {
+    // UserInfoError.findById(id).then(user => {
+    //     done(null, user);
+    // })
+    done(null, id);
 })
 
 const app = express();
@@ -56,9 +60,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 function checkLoggedIn(req, res, next) {
-
-    const isLoggedIn = true; //TODO
-
+    const isLoggedIn = req.isAuthenticated() && req.user;
     if (!isLoggedIn) {
         return res.status(401).json({
             error: "You must login!"
@@ -86,7 +88,8 @@ app.get('/auth/google/callback',
     }
 );
 app.get('/auth/logout', (req, res) => {
-
+    req.logout();
+    return res.redirect('/');
 });
 
 app.get('/secret', checkLoggedIn, (req, res) => {
